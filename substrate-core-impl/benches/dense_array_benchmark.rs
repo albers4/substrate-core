@@ -1,0 +1,28 @@
+use std::hint::black_box;
+
+use criterion::{Criterion, criterion_group, criterion_main};
+use pprof::criterion::{Output, PProfProfiler};
+use substrate_core_impl::DenseArray;
+
+fn dense_array_capacity_benchmark(c: &mut Criterion) {
+    let mut group = c.benchmark_group("dense_array_capacity");
+
+    group.bench_function("scalar", |bench| {
+        let arr: DenseArray<f64> = DenseArray::new(black_box(10_000));
+
+        bench.iter(|| {
+            let mut sum = 0.0f64;
+            for i in 0..arr.capacity() {
+                sum += black_box(i as f64);
+            }
+            black_box(sum)
+        });
+    });
+}
+
+criterion_group! {
+    name = benches;
+    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+    targets = dense_array_capacity_benchmark
+}
+criterion_main!(benches);

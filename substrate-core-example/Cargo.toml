@@ -1,0 +1,7 @@
+[package]
+name = "substrate-core-example"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+substrate-core-impl = { path = "../substrate-core-impl" }

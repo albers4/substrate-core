@@ -1,0 +1,15 @@
+[package]
+name = "substrate-core-py"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+name = "substrate_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+substrate-core-impl = { path = "../substrate-core-impl" }
+
+[dev-dependencies]

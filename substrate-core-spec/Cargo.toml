@@ -1,0 +1,5 @@
+[package]
+name = "substrate-core-spec"
+version.workspace = true
+edition.workspace = true
+

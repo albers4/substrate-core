@@ -1,0 +1,26 @@
+[package]
+name = "substrate-core-impl"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+substrate-core-spec = { path = "../substrate-core-spec" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+pprof = { version = "0.15", features = ["flamegraph", "criterion"] }
+wide = { version = "1.1" }
+rayon = { version = "1.11" }
+wgpu = { version = "28.0" }
+pollster = { version = "0.4" }
+serde = { version = "1", features = ["derive"] }
+bincode = { version = "2", features = ["serde"] }
+
+[[bench]]
+name = "dense_array_benchmark"
+harness = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
