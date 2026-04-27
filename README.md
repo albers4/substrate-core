@@ -60,3 +60,10 @@ make benchmark
 # Generate docs before commit
 make documentation
 ```
+
+## License
+
+This library is licensed under LGPL-2.1-or-later.
+See [LICENSE](LICENSE) for details.
+
+Copyright (c) 2026 ARC (Applied Research & Computation)
