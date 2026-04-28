@@ -44,6 +44,16 @@ impl Array<f64, Vec<f64>> {
         }
     }
 
+    pub fn from_scalar(scalar: f64) -> Self {
+        Self {
+            storage: vec![scalar],
+            shape: vec![1],
+            strides: vec![1],
+            offset: 0,
+            order: Default::default(),
+        }
+    }
+
     pub fn from_scalar_with_shape(scalar: f64, shape: &[usize]) -> Self {
         let size = shape.iter().product();
         Self {
