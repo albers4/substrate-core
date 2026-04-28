@@ -23,6 +23,17 @@ pub struct Array<T: Number, S: Storage<Item = T>> {
 pub type OwnedArray<T> = Array<T, Vec<T>>;
 
 impl Array<f64, Vec<f64>> {
+    pub fn empty_like(shape: &[usize]) -> Self {
+        let total: usize = shape.iter().product();
+        Self {
+            storage: Vec::with_capacity(total),
+            shape: shape.to_vec(),
+            strides: compute_strides(shape, Default::default()),
+            offset: 0,
+            order: Default::default(),
+        }
+    }
+
     pub fn from_scalar_with_shape(scalar: f64, shape: &[usize]) -> Self {
         let size = shape.iter().product();
         Self {

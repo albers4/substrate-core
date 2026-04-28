@@ -7,6 +7,7 @@ mod error;
 mod utils;
 mod view;
 mod view_access;
+mod arr_macro;
 
 pub use core::Array;
 pub use view::ArrayView;
