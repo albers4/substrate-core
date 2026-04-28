@@ -1,28 +1,10 @@
-use substrate_core_spec::{ArrayLike, ArrayLikeMut};
+// Copyright (c) 2026 ARC (Applied Research & Computation)
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-pub struct DenseArray<T> {
-    data: Vec<T>,
-}
+#![cfg_attr(not(feature = "std"), no_std)]
 
-impl<T> DenseArray<T> {
-    pub fn new(size: usize) -> DenseArray<T> {
-        Self {
-            data: Vec::<T>::with_capacity(size),
-        }
-    }
+extern crate alloc;
 
-    pub fn capacity(&self) -> usize {
-        self.data.capacity()
-    }
-}
+mod array;
 
-impl<T> ArrayLike for DenseArray<T> {
-    type Item = T;
-    type Error = String;
-
-    fn get(&self, index: usize) -> Result<&T, String> {
-        self.data
-            .get(index)
-            .ok_or_else(|| format!("index {index} out of bounds"))
-    }
-}
+pub use array::Array;

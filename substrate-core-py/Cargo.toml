@@ -9,7 +9,8 @@ name = "substrate_core"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.22", features = ["extension-module"] }
+substrate-core-spec = { path = "../substrate-core-spec" }
 substrate-core-impl = { path = "../substrate-core-impl" }
+pyo3 = { version = "0.28", features = ["extension-module"] }
 
 [dev-dependencies]
