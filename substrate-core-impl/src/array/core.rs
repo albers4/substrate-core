@@ -23,6 +23,16 @@ pub struct Array<T: Number, S: Storage<Item = T>> {
 pub type OwnedArray<T> = Array<T, Vec<T>>;
 
 impl Array<f64, Vec<f64>> {
+    pub fn empty() -> Self {
+        Self {
+            storage: vec![],
+            shape: vec![0],
+            strides: vec![1],
+            offset: 0,
+            order: Default::default(),
+        }
+    }
+
     pub fn empty_like(shape: &[usize]) -> Self {
         let total: usize = shape.iter().product();
         Self {
