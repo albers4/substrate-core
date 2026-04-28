@@ -15,4 +15,5 @@ pub enum ArrayError {
     ValidForMatricesOnly,
     AxisOutOfBounds,
     InvalidSlice,
+    IncompatibleShapes,
 }
