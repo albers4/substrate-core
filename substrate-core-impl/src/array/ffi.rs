@@ -10,7 +10,12 @@ unsafe extern "C" {
     pub fn array_create(data: *const f64, len: usize) -> *mut ArrayHandle;
     pub fn array_destroy(arr: *mut ArrayHandle);
     pub fn array_add(result: *mut ArrayHandle, a: *const ArrayHandle, b: *const ArrayHandle);
-    pub fn grad_array_add(
+    pub fn array_add_backward(
+        res: *mut ArrayHandle, dres: *mut ArrayHandle,
+        a: *const ArrayHandle, da: *mut ArrayHandle,
+        b: *const ArrayHandle, db: *mut ArrayHandle
+    );
+    pub fn array_add_forward(
         res: *mut ArrayHandle, dres: *mut ArrayHandle,
         a: *const ArrayHandle, da: *mut ArrayHandle,
         b: *const ArrayHandle, db: *mut ArrayHandle
@@ -36,29 +41,35 @@ impl CppArray {
         Ok(result)
     }
 
-    pub fn grad_add(&self, other: &Self) -> Result<(Self, Self), String> {
-        let result = CppArray::new(vec![0.0; self.len]);
+    pub fn add_backward(a: &Self, b: &Self, dres: &Self) -> (Self, Self) {
+        let res = CppArray::new(vec![0.0; a.len]);
+        let da = CppArray::new(vec![0.0; a.len]);
+        let db = CppArray::new(vec![0.0; a.len]);
+
         unsafe { 
-            // Create primal result
-            // res = a + b
-            let _res = CppArray::new(vec![0.0; self.len]);
-
-            // Create shadow for result (dres)
-            // This is the "seed". Usually set to 1.0 to get the partial 
-            // derivatives of the sum.
-            let dres = CppArray::new(vec![1.0; self.len]);
-
-            // Create shadows for inputs
-            let da = CppArray::new(vec![0.0; self.len]);
-            let db = CppArray::new(vec![0.0; self.len]);
-
-            grad_array_add(
-                result.handle, dres.handle,
-                self.handle, da.handle,
-                other.handle, db.handle
+            array_add_backward(
+                res.handle, dres.handle,
+                a.handle, da.handle,
+                b.handle, db.handle
             );
-            Ok((da, db))
         }
+
+        (da, db)
+    }
+
+    pub fn add_forward(a: &Self, da: &Self, b: &Self, db: &Self) -> Self {
+        let res = CppArray::new(vec![0.0; a.len]);
+        let dres = CppArray::new(vec![0.0; a.len]);
+
+        unsafe { 
+            array_add_forward(
+                res.handle, dres.handle,
+                a.handle, da.handle,
+                b.handle, db.handle
+            );
+        }
+
+        dres
     }
 
     pub fn to_vec(&self) -> Vec<f64> {

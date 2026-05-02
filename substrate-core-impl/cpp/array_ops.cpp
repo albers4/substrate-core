@@ -8,7 +8,8 @@
 
 extern "C" int enzyme_dup;
 extern "C" int enzyme_const;
-extern "C" double __enzyme_autodiff(void*, ...);
+extern "C" void __enzyme_autodiff(void*, ...);
+extern "C" void __enzyme_fwddiff(void*, ...);
 
 struct ArrayHandle {
     std::vector<double> data;
@@ -32,7 +33,8 @@ extern "C" void array_add(ArrayHandle *res, const ArrayHandle *a, const ArrayHan
     }
 }
 
-extern "C" void grad_array_add(
+// Reverse mode (Adjoint)
+extern "C" void array_add_backward(
     ArrayHandle* res, ArrayHandle* dres,
     ArrayHandle* a,   ArrayHandle* da,
     ArrayHandle* b,   ArrayHandle* db
@@ -41,6 +43,18 @@ extern "C" void grad_array_add(
                       enzyme_dup, res, dres,
                       enzyme_dup, a, da,
                       enzyme_dup, b, db);
+}
+
+// Forward mode (Tangent)
+extern "C" void array_add_forward(
+    ArrayHandle* res, ArrayHandle* dres,
+    ArrayHandle* a,   ArrayHandle* da,
+    ArrayHandle* b,   ArrayHandle* db
+) {
+    __enzyme_fwddiff((void*) array_add,
+                     enzyme_dup, res, dres,
+                     enzyme_dup, a, da,
+                     enzyme_dup, b, db);
 }
 
 extern "C" void array_copy(const ArrayHandle *arr, double *buffer, size_t len) {

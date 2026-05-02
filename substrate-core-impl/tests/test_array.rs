@@ -11,17 +11,19 @@ fn test_array_creation() {
 }
 
 #[test]
-fn test_array_op_add_grad() {
+fn test_array_op_add_forward_backward() {
     let a = CppArray::new(vec![0.0, 1.0, 3.0, 4.0, 5.0]);
     let b = CppArray::new(vec![0.0, 1.0, 3.0, 4.0, 5.0]);
-    let res = a.add(&b).unwrap();
-    let res_vec = res.to_vec();
 
-    let (da, db) = a.grad_add(&b).unwrap();
-    let da_vec = da.to_vec();
-    let db_vec = db.to_vec();
+    let da = CppArray::new(vec![1.0; 5]);
+    let db = CppArray::new(vec![0.0; 5]);
 
-    println!("res={:#?}", res_vec);
-    println!("da={:#?}", da_vec);
-    println!("db={:#?}", db_vec);
+    let dres_fwd = CppArray::add_forward(&a, &da, &b, &db);
+    println!("dres_fwd={:#?}", dres_fwd.to_vec());
+
+    let dres_seed = CppArray::new(vec![5.0, 5.0, 5.0, 5.0, 5.0]);
+
+    let (grad_a, grad_b) = CppArray::add_backward(&a, &b, &dres_seed);
+    println!("grad_a={:#?}", grad_a.to_vec());
+    println!("grad_b={:#?}", grad_b.to_vec());
 }
