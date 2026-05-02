@@ -97,7 +97,11 @@ pub fn broadcast_shapes(shape1: &[usize], shape2: &[usize]) -> Result<Vec<usize>
     Ok(result.into_iter().rev().collect())
 }
 
-pub fn broadcast_strides(orig_shape: &[usize], orig_strides: &[usize], target_shape: &[usize]) -> Result<Vec<usize>, ArrayError> {
+pub fn broadcast_strides(
+    orig_shape: &[usize],
+    orig_strides: &[usize],
+    target_shape: &[usize],
+) -> Result<Vec<usize>, ArrayError> {
     let mut new_strides: Vec<usize> = vec![0; target_shape.len()];
 
     let orig_ndim: usize = orig_shape.len();

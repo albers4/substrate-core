@@ -5,6 +5,7 @@ pub mod index;
 pub mod memory_order;
 pub mod number;
 pub mod storage;
+pub mod ops;
 
 use index::ToIndex;
 use memory_order::MemoryOrder;

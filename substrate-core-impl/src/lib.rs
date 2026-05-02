@@ -8,3 +8,4 @@ extern crate alloc;
 mod array;
 
 pub use array::Array;
+pub use array::CppArray;

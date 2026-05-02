@@ -1,4 +1,4 @@
-.PHONY: python rust test benchmark clean
+.PHONY: python rust python-venv python-dev-deps python-deps rust-test python-test test rust-benchmark python-benchmark benchmark rust-documentation python-documentation documentation documentation-open rust-format python-format format rust-lint python-lint lint clean
 
 # ----- Rust -----
 
