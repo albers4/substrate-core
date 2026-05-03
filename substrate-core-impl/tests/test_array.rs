@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 use substrate_core_impl::{Array, CppArray};
-use substrate_core_spec::array::{ArrayAccess, ArrayLike};
+use substrate_core_spec::array::{ArrayLike, ops::InitOps};
 
 #[test]
 fn test_array_creation() {

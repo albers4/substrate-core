@@ -17,3 +17,10 @@ pub enum ArrayError {
     InvalidSlice,
     IncompatibleShapes,
 }
+
+
+pub enum ArrayViewError {
+    IndexOutOfBounds,
+    DimensionMismatch,
+    IndexConversionError,
+}

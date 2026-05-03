@@ -1,24 +1,66 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-use crate::array::{ArrayAccess, index::ToIndex, number::Number};
+use core::ops::Range;
 
-pub trait AccessOps {
+use crate::Vec;
+use crate::array::ArrayViewLike;
+use crate::array::{ArrayLike, index::ToIndex, number::Number};
+
+pub trait AccessOps: Sized {
     type Item: Number;
-    type Array;
+    type Output: ArrayLike;
     type Error;
 
-    fn get(&self, indices: &[impl ToIndex]) -> Result<Self::Item, Self::Error>;
-    fn slice(&self) -> Result<Self::Array, Self::Error>;
+    /// # Safety
+    unsafe fn get_unchecked<I: ToIndex>(&self, indices: &[I]) -> &Self::Item
+    where
+        I::Error: core::fmt::Debug;
+    fn first(&self) -> Result<&Self::Item, Self::Error>;
+    fn last(&self) -> Result<&Self::Item, Self::Error>;
+    fn get_flat(&self, index: impl ToIndex) -> Result<&Self::Item, Self::Error>;
+
+    fn get(&self, indices: &[impl ToIndex]) -> Result<&Self::Item, Self::Error>;
+    fn slice_by_indices(&self, indices: &[impl ToIndex]) -> Result<Self, Self::Error>;
+    fn slice_by_range(&self, axis: usize, range: Range<usize>) -> Result<Self, Self::Error>;
+    fn slice_by_stride(
+        &self,
+        axis: usize,
+        start: usize,
+        end: usize,
+        step: usize,
+    ) -> Result<Self, Self::Error>;
+
     /// using boolean mask
-    fn select(&self) -> Result<Self::Array, Self::Error>;
-    fn take(&self) -> Result<Self::Array, Self::Error>;
+    fn select(&self) -> Result<Self::Output, Self::Error>;
+    fn take(&self) -> Result<Self::Output, Self::Error>;
     /// by coordinate list
-    fn gather(&self) -> Result<Self::Array, Self::Error>;
+    fn gather(&self) -> Result<Self::Output, Self::Error>;
+    fn iter(&self) -> impl Iterator<Item = Self::Item>;
+}
+
+pub trait AccessOpsMut: AccessOps {
+    fn get_flat_mut(&mut self, index: impl ToIndex) -> Result<&mut Self::Item, Self::Error>;
+    /// Safety
+    unsafe fn get_unchecked_mut<I: ToIndex>(&mut self, indices: &[I]) -> &mut Self::Item
+    where
+        I::Error: core::fmt::Debug;
+
+    fn get_mut(&mut self, indices: &[impl ToIndex]) -> Result<&mut Self::Item, Self::Error>;
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut Self::Item>;
+
+    fn set_flat(&mut self, index: impl ToIndex, value: Self::Item) -> Result<(), Self::Error>;
+    fn set(&mut self, indices: &[impl ToIndex], value: Self::Item) -> Result<(), Self::Error>;
+    /// # Safety
+    unsafe fn set_unchecked(
+        &mut self,
+        indices: &[impl ToIndex],
+        value: Self::Item,
+    ) -> Result<(), Self::Error>;
 }
 
 pub trait UnaryOps {
-    type Output: ArrayAccess;
+    type Output: ArrayLike;
     type Error;
 
     fn abs(&self) -> Result<Self::Output, Self::Error>;
@@ -43,7 +85,7 @@ pub trait UnaryOps {
 }
 
 pub trait BinaryOps<Rhs = Self> {
-    type Output: ArrayAccess;
+    type Output: ArrayLike;
     type Error;
 
     fn add(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
@@ -56,8 +98,16 @@ pub trait BinaryOps<Rhs = Self> {
     fn min(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
 }
 
+pub trait ConvertOps {
+    type Item: Number;
+    type Error;
+
+    fn to_scalar(&self) -> Result<Self::Item, Self::Error>;
+    fn to_vec(&self) -> Vec<Self::Item>;
+}
+
 pub trait ReduceOps {
-    type Output: ArrayAccess;
+    type Output: ArrayLike;
     type Error;
 
     fn sum(&self) -> Result<Self::Output, Self::Error>;
@@ -84,13 +134,19 @@ pub trait ReduceOps {
     fn all_axis(&self, value: impl Number, axis: usize) -> Result<Self::Output, Self::Error>;
 }
 
-pub trait LinAlgOps<Rhs = Self> {
-    type Output: ArrayAccess;
+pub trait LinearAlgebraOps<Rhs = Self> {
+    type Output: ArrayLike;
     type Error;
+    type View<'a>: ArrayViewLike + 'a
+    where
+        Self: 'a;
 
     fn dot(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
     fn matmul(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
-    fn transpose(&self) -> Result<Self::Output, Self::Error>;
+
+    fn transpose(&self) -> Result<Self::View<'_>, Self::Error>;
+    fn transpose_copy(&self) -> Result<Self::Output, Self::Error>;
+
     fn trace(&self) -> Result<Self::Output, Self::Error>;
     fn det(&self) -> Result<Self::Output, Self::Error>;
     fn inv(&self) -> Result<Self::Output, Self::Error>;
@@ -104,7 +160,7 @@ pub trait LinAlgOps<Rhs = Self> {
 }
 
 pub trait LogicOps<Rhs = Self> {
-    type Output: ArrayAccess;
+    type Output: ArrayLike;
     type Error;
 
     fn is_finite(&self) -> Result<Self::Output, Self::Error>;
@@ -120,11 +176,16 @@ pub trait LogicOps<Rhs = Self> {
 }
 
 pub trait ShapeOps {
-    type Output: ArrayAccess;
+    type Output: ArrayLike;
     type Error;
 
-    fn reshape(&self) -> Result<Self::Output, Self::Error>;
-    fn reshape_copy(&self) -> Result<Self::Output, Self::Error>;
+    fn reshape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
+    fn reshape_copy(&self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
+    fn into_shape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
+
+    fn to_row_major(self) -> Result<Self::Output, Self::Error>;
+    fn to_column_major(self) -> Result<Self::Output, Self::Error>;
+
     fn flatten(&self) -> Result<Self::Output, Self::Error>;
     fn squeeze(&self) -> Result<Self::Output, Self::Error>;
     fn unsqueeze(&self) -> Result<Self::Output, Self::Error>;
@@ -137,8 +198,9 @@ pub trait ShapeOps {
     fn tile(&self) -> Result<Self::Output, Self::Error>;
 }
 
-pub trait InitOps {
-    type Output: ArrayAccess;
+pub trait InitOps: Sized {
+    type Item: Number;
+    type Output: ArrayLike;
     type Error;
 
     /// Uniform
@@ -149,6 +211,13 @@ pub trait InitOps {
     fn diag();
     fn full();
     fn arange();
-    fn linspace();
     fn logspace();
+
+    fn zeros(shape: &[usize]) -> Self;
+    fn ones(shape: &[usize]) -> Self;
+    fn from_vec(vec: Vec<Self::Item>) -> Self;
+    fn linspace(a: Self::Item, b: Self::Item, n: usize) -> Result<Self, Self::Error>;
+    fn from_fn<F>(shape: &[usize], f: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(&[usize]) -> Self::Item;
 }
