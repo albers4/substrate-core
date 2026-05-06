@@ -91,7 +91,7 @@ impl<'a> ArrayLike for ArrayView<'a, f64> {
         }
 
         if self.is_contiguous() {
-            return Ok(self.offset() + index);
+            return Ok(self.offset + index);
         }
 
         let mut coords = vec![0; self.ndim()];
@@ -113,7 +113,6 @@ impl<'a> ArrayLike for ArrayView<'a, f64> {
                 }
             }
         }
-        debug_assert_eq!(remainder, 0, "Flat index decomposition failed");
 
         let mut phys = self.offset();
         for (d, coord) in coords.iter().enumerate() {

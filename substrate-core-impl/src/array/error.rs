@@ -22,4 +22,5 @@ pub enum ArrayError {
     InvalidParameter,
     InvalidSplit,
     NotImplemented,
+    ValidForVectorsOnly,
 }

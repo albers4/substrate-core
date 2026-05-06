@@ -36,7 +36,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, AccessOps};
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// assert_eq!(*a.get(&[1, 1]).unwrap(), 4.0);
     /// ```
     fn get(&self, indices: &[impl ToIndex]) -> Result<&Self::Item, Self::Error> {
@@ -311,12 +311,12 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     ///
     /// let arr = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap();
     /// let view = arr.view();
     /// // Indices: shape [2,2], each value picks column index
     /// let indices = Array::from_vec(vec![0.0, 2.0, 1.0, 0.0])
-    ///     .reshape_copy(&[2, 2])
+    ///     .reshape(&[2, 2])
     ///     .unwrap();
     /// let gathered = arr.view().gather(1, &indices.view()).unwrap();
     /// // Output shape [2,2]:
@@ -407,7 +407,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{AccessOps, InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let view = a.view();
     /// unsafe {
     ///     assert_eq!(*view.get_unchecked(&[1, 1]), 4.0);
@@ -438,7 +438,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{AccessOps, InitOps, ShapeOps, ConvertOps};
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let view = a.view();
     /// assert_eq!(*view.first().unwrap(), 1.0);
     ///
@@ -466,7 +466,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{AccessOps, InitOps, ShapeOps};
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// assert_eq!(*a.last().unwrap(), 4.0);
     ///
     /// let empty = Array::from_vec(vec![]);
@@ -502,7 +502,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, AccessOps};
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// assert_eq!(*a.get_flat(2).unwrap(), 3.0);
     ///
     /// // Out‑of‑bounds
@@ -530,7 +530,7 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{ConvertOps, InitOps, AccessOps, ShapeOps};
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let view = a.view();
     /// assert_eq!(view.data(), &[1.0, 2.0, 3.0, 4.0]);
     ///

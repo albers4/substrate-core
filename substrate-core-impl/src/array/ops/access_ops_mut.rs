@@ -25,7 +25,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, AccessOpsMut, ConvertOps};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// *a.get_mut(&[1, 1]).unwrap() = 99.0;
     /// assert_eq!(a.to_vec(), vec![1.0, 2.0, 3.0, 99.0]);
     /// ```
@@ -55,7 +55,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, AccessOpsMut, ConvertOps};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// for x in a.iter_mut() {
     ///     *x *= 2.0;
     /// }
@@ -146,7 +146,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps, AccessOpsMut};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// a.set(&[1, 1], 99.0).unwrap();
     /// assert_eq!(a.to_vec(), vec![1.0, 2.0, 3.0, 99.0]);
     /// ```
@@ -176,7 +176,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps, AccessOpsMut};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// unsafe { a.set_unchecked(&[1, 1], 99.0).unwrap() };
     /// assert_eq!(a.to_vec(), vec![1.0, 2.0, 3.0, 99.0]);
     /// ```
@@ -213,7 +213,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps, AccessOpsMut};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// *a.get_flat_mut(2).unwrap() = 99.0;
     /// assert_eq!(a.to_vec(), vec![1.0, 2.0, 99.0, 4.0]);
     /// ```
@@ -244,7 +244,7 @@ impl AccessOpsMut for Array<f64, Vec<f64>> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps, AccessOpsMut};
     ///
-    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let mut a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// unsafe {
     ///     *a.get_unchecked_mut(&[1, 1]) = 99.0;
     /// }

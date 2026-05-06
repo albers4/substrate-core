@@ -36,7 +36,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// let v = a.view();
     /// let s = v.sum().unwrap();
     /// assert_eq!(s.to_scalar().unwrap(), 6.0);
-    /// assert_eq!(s.shape(), [1]);
+    /// assert_eq!(s.shape(), []);
     /// ```
     fn sum(&self) -> Result<Self::Output, Self::Error> {
         if self.is_empty() {
@@ -73,7 +73,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::memory_order::MemoryOrder;
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap()
     ///     .to_column_major().unwrap();
     /// let view = a.view();
@@ -176,7 +176,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap();
     /// let view = a.view();
     /// let mean_axis_0 = view.mean_axis(0).unwrap(); // mean over rows → shape [3]
@@ -284,7 +284,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ReduceOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3]).unwrap();
+    ///     .reshape(&[2, 3]).unwrap();
     /// let view = a.view();
     /// let var_axis_0 = view.var_axis(0).unwrap(); // shape [3]
     /// assert_eq!(var_axis_0.to_vec(), vec![4.5, 4.5, 4.5]); // variance of each column
@@ -402,7 +402,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ReduceOps, ShapeOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3]).unwrap();
+    ///     .reshape(&[2, 3]).unwrap();
     /// let view = a.view();
     /// let std_axis_0 = view.std_axis(0).unwrap();
     /// assert!(std_axis_0.to_vec().iter().all(|&x| (x - 2.1213).abs() < 1e-4));
@@ -472,7 +472,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap();
     /// let v = a.view();
     /// let prod_axis_0 = v.prod_axis(0).unwrap(); // product over rows -> shape [3]
@@ -573,7 +573,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     ///
     /// let a = Array::from_vec(vec![1.0, 3.0, 2.0, 4.0, 0.0, 5.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap();
     /// let view = a.view();
     /// let min_axis_0 = view.min_axis(0).unwrap(); // min over rows -> shape [3]
@@ -674,7 +674,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     ///
     /// let a = Array::from_vec(vec![1.0, 3.0, 2.0, 4.0, 0.0, 5.0])
-    ///     .reshape_copy(&[2, 3])
+    ///     .reshape(&[2, 3])
     ///     .unwrap();
     /// let view = a.view();
     /// let max_axis_0 = view.max_axis(0).unwrap(); // max over rows -> shape [3]
@@ -783,7 +783,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ReduceOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 5.0, 2.0, 3.0, 0.0, 4.0])
-    ///     .reshape_copy(&[2, 3]).unwrap();
+    ///     .reshape(&[2, 3]).unwrap();
     /// let view = a.view();
     /// let argmin_axis_1 = view.argmin_axis(1).unwrap(); // argmin over columns
     /// assert_eq!(argmin_axis_1.to_vec(), vec![0.0, 1.0]); // row0 min at col0, row1 min at col1
@@ -896,7 +896,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ReduceOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 5.0, 2.0, 3.0, 0.0, 4.0])
-    ///     .reshape_copy(&[2, 3]).unwrap();
+    ///     .reshape(&[2, 3]).unwrap();
     /// let view = a.view();
     /// let argmax_axis_1 = view.argmax_axis(1).unwrap(); // argmax over columns
     /// assert_eq!(argmax_axis_1.to_vec(), vec![1.0, 2.0]); // row0 max at col0, row1 max at col1
@@ -994,7 +994,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ReduceOps, ShapeOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0])
-    ///     .reshape_copy(&[2, 2]).unwrap();
+    ///     .reshape(&[2, 2]).unwrap();
     /// let any_axis_0 = a.any_axis(2.0, 0).unwrap(); // any in column0? column0: [1.0, 4.0] -> 4.0 != 2.0; column1: [2.0, 3.0] -> 2.0 == 2.0
     /// assert_eq!(any_axis_0.to_vec(), vec![0.0, 1.0]); // shape [2]
     /// ```
@@ -1083,7 +1083,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ReduceOps, ShapeOps, ConvertOps};
     ///
     /// let a = Array::from_vec(vec![1.0, 1.0, 1.0, 2.0])
-    ///     .reshape_copy(&[2, 2]).unwrap();
+    ///     .reshape(&[2, 2]).unwrap();
     /// let view = a.view();
     /// let all_axis_1 = view.all_axis(1.0, 1).unwrap(); // row0: both 1 -> true; row1: [1.0, 2.0] both 1.0? no
     /// assert_eq!(all_axis_1.to_vec(), vec![1.0, 0.0]); // shape [2]

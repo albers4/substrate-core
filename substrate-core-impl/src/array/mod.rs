@@ -11,6 +11,7 @@ mod utils;
 mod view;
 
 pub use core::Array;
+pub use error::ArrayError;
 pub use view::ArrayView;
 
 pub use ffi::CppArray;

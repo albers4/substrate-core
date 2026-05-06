@@ -1,6 +1,7 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+use cfg_if::cfg_if;
 use substrate_core_spec::array::{
     ArrayLike,
     memory_order::MemoryOrder,
@@ -19,12 +20,100 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
     where
         Self: 'b;
 
-    fn dot<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
-        todo!()
+    /// Computes the dot product (inner product) of two 1‑D arrays.
+    ///
+    /// Both arrays must be one‑dimensional and have the same length.
+    /// The result is a 0‑dimensional (scalar) array containing the sum of element‑wise products.
+    ///
+    /// # Arguments
+    /// * `other` – The right‑hand side array (must be 1‑D).
+    ///
+    /// # Returns
+    /// `Ok(Self::Output)` containing the scalar result.
+    ///
+    /// # Errors
+    /// * `ArrayError::ValidForVectorsOnly` – if either array is not 1‑D.
+    /// * `ArrayError::IncompatibleShapes` – if the lengths differ.
+    ///
+    /// # Examples
+    /// ```
+    /// use substrate_core_impl::Array;
+    /// use substrate_core_spec::array::ops::{InitOps, LinearAlgebraOps, ConvertOps};
+    ///
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]);
+    /// let b = Array::from_vec(vec![4.0, 5.0, 6.0]);
+    /// let dot = a.view().dot(&b.view()).unwrap();
+    /// assert_eq!(dot.to_scalar().unwrap(), 32.0);
+    /// ```
+    fn dot(&self, other: &ArrayView<'_, f64>) -> Result<Self::Output, Self::Error> {
+        if self.shape().len() != 1 || other.shape().len() != 1 {
+            return Err(ArrayError::ValidForVectorsOnly);
+        }
+
+        if self.shape()[0] != other.shape()[0] {
+            return Err(ArrayError::IncompatibleShapes);
+        }
+
+        cfg_if! {
+            if #[cfg(feature = "simd")] {
+                self.dot_simd(other)
+            } else {
+                self.dot_scalar(other)
+            }
+        }
     }
 
-    fn matmul<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
-        todo!()
+    /// Computes the matrix multiplication (matmul) of `self` and `other` (self @ other).
+    /// Internally, `self` is NOT normalized to RowMajor and `other` NOT to ColumnMajor,
+    /// which would maximize cache efficiency during computation. THIS CONVERSION IS UP
+    /// TO THE USER. The output memory order follows RowMajor.
+    ///
+    /// # Arguments
+    /// * `other` - A 2D array where `other.shape()[0]` must equal `self.shape()[1]`
+    ///
+    /// # Returns
+    /// `Result<Array<E>, &'static str>` with shape `[self.shape()[0], other.shape()[1]]`
+    ///
+    /// # Errors
+    /// - Returns `ArrayErrors::ValidForMatricesOnly` if either array is not 2D
+    /// - Returns `ArrayErrors::IncompatibleShapes` if `self.shape()[1] != other.shape()[0]`
+    ///
+    /// # Examples
+    /// ```
+    /// use substrate_core_impl::Array;
+    /// use substrate_core_spec::array::ArrayLike;
+    /// use substrate_core_spec::array::ops::{InitOps, LinearAlgebraOps, ConvertOps, AccessOps, ShapeOps};
+    ///
+    /// let a = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[2, 3]).unwrap().to_row_major().unwrap();
+    /// assert_eq!(a.shape(), [2, 3]);
+    /// let b = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[3, 2]).unwrap().to_column_major().unwrap();
+    /// assert_eq!(b.shape(), [3, 2]);
+    /// let ab = a.view().matmul(&b.view()).unwrap();
+    /// assert_eq!(ab.shape(), [2, 2]);
+    /// assert_eq!(ab.to_vec(), [22.0, 28.0, 49.0, 64.0]);
+    /// ```
+    fn matmul(&self, other: &ArrayView<'_, f64>) -> Result<Self::Output, Self::Error> {
+        if self.shape().len() != 2 || other.shape().len() != 2 {
+            return Err(ArrayError::ValidForMatricesOnly);
+        }
+
+        if self.shape()[1] != other.shape()[0] {
+            return Err(ArrayError::IncompatibleShapes);
+        }
+
+        cfg_if! {
+            if #[cfg(feature = "gpu")] {
+                todo!()
+            } else if #[cfg(all(feature = "parallel", feature = "simd"))] {
+                return self.matmul_parallel_simd(other);
+            } else if #[cfg(feature = "simd")] {
+                return self.matmul_simd(other);
+            } else if #[cfg(feature = "parallel")] {
+                return self.matmul_parallel(other);
+            } else {
+                return self.matmul_scalar(other);
+            }
+        }
     }
 
     /// Returns a lazy transposed view of the 2D array.
@@ -42,7 +131,7 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, AccessOps, LinearAlgebraOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let t = a.transpose().unwrap();
     /// assert!(a.is_contiguous());
     /// assert!(!t.is_contiguous());
@@ -83,7 +172,7 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, AccessOps, LinearAlgebraOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let t = a.transpose_copy().unwrap();
     /// assert_eq!(t.to_vec(), vec![1.0, 3.0, 2.0, 4.0]); // row‑major order
     /// ```
@@ -164,12 +253,18 @@ impl LinearAlgebraOps for Array<f64, Vec<f64>> {
     where
         Self: 'b;
 
-    fn dot<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
-        todo!()
+    /// Computes the dot product (inner product) of two 1‑D arrays.
+    ///
+    /// See [`ArrayView::dot`] for details.
+    fn dot(&self, other: &ArrayView<'_, f64>) -> Result<Self::Output, Self::Error> {
+        self.view().dot(other)
     }
 
-    fn matmul<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
-        todo!()
+    /// Computes the matrix multiplication (matmul) of `self` and `other` (self @ other).
+    ///
+    /// See [`ArrayView::matmul`] for details.
+    fn matmul(&self, other: &ArrayView<'_, f64>) -> Result<Self::Output, Self::Error> {
+        self.view().matmul(other)
     }
 
     /// Returns a lazy transposed view of the 2D array.

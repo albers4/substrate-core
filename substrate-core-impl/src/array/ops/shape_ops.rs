@@ -57,7 +57,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// assert_eq!(reshaped.shape(), &[2, 3]);
     /// assert_eq!(reshaped.to_vec(), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
     /// ```
-    fn reshape(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error> {
+    fn reshape_view(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error> {
         if new_shape.is_empty() {
             return Err(ArrayError::EmptyShape);
         }
@@ -108,11 +108,11 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
     /// let view = a.view();
-    /// let reshaped = view.reshape_copy(&[2, 3]).unwrap();
+    /// let reshaped = view.reshape(&[2, 3]).unwrap();
     /// assert_eq!(reshaped.shape(), &[2, 3]);
     /// assert_eq!(reshaped.to_vec(), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
     /// ```
-    fn reshape_copy(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error> {
+    fn reshape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error> {
         if new_shape.is_empty() {
             return Err(ArrayError::EmptyShape);
         }
@@ -151,7 +151,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ConvertOps, ShapeOps, LinearAlgebraOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let view = a.view();
     /// let transposed_view = view.transpose().unwrap();         // lazy, non‑contiguous
     /// assert!(!transposed_view.is_contiguous());
@@ -200,7 +200,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ConvertOps, ShapeOps, LinearAlgebraOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap(); // this gives row-major
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap(); // this gives row-major
     /// let view = a.view();
     /// let transposed_view = view.transpose().unwrap();       // lazy, non‑contiguous
     /// assert!(!transposed_view.is_contiguous());
@@ -253,7 +253,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape_copy(&[2, 2]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0]).reshape(&[2, 2]).unwrap();
     /// let flat = a.view().flatten().unwrap();
     /// assert_eq!(flat.shape(), &[4]);
     /// assert_eq!(flat.to_vec(), vec![1.0, 2.0, 3.0, 4.0]);
@@ -284,7 +284,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]).reshape_copy(&[1, 3, 1]).unwrap();
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]).reshape(&[1, 3, 1]).unwrap();
     /// let squeezed = a.view().squeeze().unwrap();
     /// assert_eq!(squeezed.shape(), &[3]);
     /// assert_eq!(squeezed.to_vec(), vec![1.0, 2.0, 3.0]);
@@ -292,8 +292,8 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     fn squeeze(&self) -> Result<Self::Output, Self::Error> {
         let new_shape: Vec<usize> = self.shape().iter().filter(|&&d| d != 1).copied().collect();
         if new_shape.is_empty() {
-            let data = vec![*self.iter().next().ok_or(ArrayError::EmptyArray)?];
-            return Array::from_vec_with_shape(data, &[1]);
+            let scalar = *self.iter().next().ok_or(ArrayError::EmptyArray)?;
+            return Ok(Array::from_scalar(scalar));
         }
         let new_len = new_shape.iter().product::<usize>();
         let mut data = Vec::with_capacity(new_len);
@@ -303,7 +303,14 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
             data.push(val);
         }
 
-        Array::from_vec_with_shape(data, &new_shape)
+        let strides = compute_strides(&new_shape, self.order());
+        Ok(Array {
+            storage: data,
+            shape: new_shape,
+            strides,
+            offset: 0,
+            order: self.order(),
+        })
     }
 
     /// Adds a new dimension of size 1 at the specified axis position.
@@ -552,7 +559,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
     ///
-    /// let a = Array::from_vec(vec![1.0,2.0,3.0,4.0,5.0,6.0]).reshape_copy(&[2,3]).unwrap();
+    /// let a = Array::from_vec(vec![1.0,2.0,3.0,4.0,5.0,6.0]).reshape(&[2,3]).unwrap();
     /// let splits = a.view().split(3, 1).unwrap();
     /// assert_eq!(splits.len(), 3);
     /// assert_eq!(splits[0].to_vec(), vec![1.0, 4.0]);
@@ -799,7 +806,7 @@ impl ShapeOps for Array<f64, Vec<f64>> {
     /// Zero-copy reshape, return a new view.
     ///
     /// See [`ArrayView::reshape`] for details.
-    fn reshape(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error> {
+    fn reshape_view(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error> {
         if new_shape.is_empty() {
             return Err(ArrayError::EmptyShape);
         }
@@ -826,8 +833,8 @@ impl ShapeOps for Array<f64, Vec<f64>> {
     /// Reshapes the array view into a new shape, returning an owned array.
     ///
     /// See [`ArrayView::reshape`] for details.
-    fn reshape_copy(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error> {
-        self.view().reshape_copy(new_shape)
+    fn reshape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error> {
+        self.view().reshape(new_shape)
     }
 
     /// Converts the array view into a contiguous row‑major owned array.

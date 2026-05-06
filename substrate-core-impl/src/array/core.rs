@@ -18,32 +18,11 @@ pub struct Array<T: Number, S: Storage<Item = T>> {
 pub type OwnedArray<T> = Array<T, Vec<T>>;
 
 impl Array<f64, Vec<f64>> {
-    pub fn empty() -> Self {
-        Self {
-            storage: vec![],
-            shape: vec![0],
-            strides: vec![1],
-            offset: 0,
-            order: Default::default(),
-        }
-    }
-
-    pub fn empty_like(shape: &[usize]) -> Self {
-        let total: usize = shape.iter().product();
-        Self {
-            storage: Vec::with_capacity(total),
-            shape: shape.to_vec(),
-            strides: compute_strides(shape, Default::default()),
-            offset: 0,
-            order: Default::default(),
-        }
-    }
-
     pub fn from_scalar(scalar: f64) -> Self {
         Self {
             storage: vec![scalar],
-            shape: vec![1],
-            strides: vec![1],
+            shape: vec![],
+            strides: vec![],
             offset: 0,
             order: Default::default(),
         }
@@ -63,9 +42,6 @@ impl Array<f64, Vec<f64>> {
     pub fn from_vec_with_shape(data: Vec<f64>, shape: &[usize]) -> Result<Self, ArrayError> {
         if shape.is_empty() {
             return Err(ArrayError::EmptyShape);
-        }
-        if shape.contains(&0) {
-            return Err(ArrayError::InvalidShapeDimension);
         }
         if data.len() != shape.iter().product::<usize>() {
             return Err(ArrayError::DimensionMismatch);
@@ -122,14 +98,11 @@ impl ArrayLike for Array<f64, Vec<f64>> {
     }
 
     fn is_contiguous(&self) -> bool {
-        match self.order {
-            MemoryOrder::RowMajor => self.strides.last() == Some(&1),
-            MemoryOrder::ColumnMajor => self.strides.first() == Some(&1),
-        }
+        self.strides == compute_strides(&self.shape, self.order)
     }
 
     fn is_canonical(&self, order: MemoryOrder) -> bool {
-        self.order() == order && self.is_contiguous() && self.offset() == 0
+        self.order == order && self.is_contiguous() && self.offset == 0
     }
 
     fn physical_from_indices(&self, indices: &[impl ToIndex]) -> Result<usize, Self::Error> {

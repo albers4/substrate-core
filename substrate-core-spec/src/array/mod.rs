@@ -12,7 +12,7 @@ use memory_order::MemoryOrder;
 
 use crate::array::{index::ToIndex, number::Number};
 
-pub trait ArrayLike {
+pub trait ArrayLike: Send + Sync {
     type Item: Number;
     type Error;
 

@@ -279,9 +279,10 @@ pub trait LinearAlgebraOps: ArrayLike {
         Self: 'a;
 
     /// Dot product of two 1-D arrays (also known as inner product).
-    fn dot<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
+    fn dot(&self, other: &Self::View<'_>) -> Result<Self::Output, Self::Error>;
     /// Matrix multiplication (2-D arrays), support broadcasting.
-    fn matmul<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
+    //fn matmul<Rhs: ShapeOps + AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<Self::Output, Self::Error>;
+    fn matmul(&self, other: &Self::View<'_>) -> Result<Self::Output, Self::Error>;
     /// Lazy transpose (view) - swaps shape and strides, O(1).
     fn transpose(&self) -> Result<Self::View<'_>, Self::Error>;
     /// Eager transpose - copies data to a new contiguous array.
@@ -366,9 +367,9 @@ pub trait ShapeOps: ArrayLike {
         Self: 'a;
 
     /// Zero-copy reshape of contiguous, error otherwise.
-    fn reshape(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error>;
+    fn reshape_view(&self, new_shape: &[usize]) -> Result<Self::View<'_>, Self::Error>;
     /// Reshape, making a contiguous copy if necessary.
-    fn reshape_copy(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
+    fn reshape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
     /// Convert to contiguous row-major (C order).
     fn to_row_major(self) -> Result<Self::Output, Self::Error>;
     /// Convert to contiguous column-major (Fortran order).
