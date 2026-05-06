@@ -23,7 +23,7 @@ fn main() {
             .flag("-load")
             .flag("-Xclang")
             .flag(&enzyme_path);
-        build.flag(&format!("-fpass-plugin={}", enzyme_path));
+        build.flag(format!("-fpass-plugin={}", enzyme_path));
     } else {
         panic!("ENZYME_PATH not set. Enzyme is required for this build.");
     }

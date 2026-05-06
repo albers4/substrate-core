@@ -18,11 +18,17 @@ pub trait InitOps: ArrayLike + Sized {
     /// Identity matrix (2-D only).
     fn eye(n: usize) -> Result<Self::Output, Self::Error>;
     /// Diagonal matrix from a 1-D array.
-    fn diag(diag: &(impl ArrayLike + AccessOps<Item = Self::Item, Error = Self::Error>)) -> Result<Self::Output, Self::Error>;
+    fn diag(
+        diag: &impl AccessOps<Item = Self::Item, Error = Self::Error>,
+    ) -> Result<Self::Output, Self::Error>;
     /// Fill array with a constant value.
     fn full(shape: &[usize], value: Self::Item) -> Result<Self::Output, Self::Error>;
     /// Regulary spaced 1-D array.
-    fn arange(start: Self::Item, end: Self::Item, step: Self::Item) -> Result<Self::Output, Self::Error>;
+    fn arange(
+        start: Self::Item,
+        end: Self::Item,
+        step: Self::Item,
+    ) -> Result<Self::Output, Self::Error>;
     /// Log-spaced array.
     fn logspace(a: Self::Item, b: Self::Item, n: usize) -> Result<Self::Output, Self::Error>;
     /// Create array of zeros with given shape.
@@ -94,7 +100,7 @@ pub trait AccessOps: ArrayLike + Sized {
 pub trait AccessOpsMut: AccessOps {
     /// Returns a mutable reference to the elemenet at the given flat logical index.
     fn get_flat_mut(&mut self, index: impl ToIndex) -> Result<&mut Self::Item, Self::Error>;
-    /// Safety
+    /// # Safety
     /// Unsafely returns a mutable reference to the element at the given flat logical index.
     unsafe fn get_unchecked_mut<I: ToIndex>(&mut self, indices: &[I]) -> &mut Self::Item
     where
@@ -310,21 +316,47 @@ pub trait LogicOps: ArrayLike {
     /// Are all elements NaN?
     fn is_nan(&self) -> bool;
     /// Are all elements close (withing tolerance, rtol=1e-5, atol=1e-8)?
-    fn allclose<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn allclose<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Are all elements close (withing tolerance)?
-    fn allclose_with<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs, rtol: f64, atol: f64) -> Result<bool, Self::Error>;
+    fn allclose_with<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+        rtol: f64,
+        atol: f64,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise equality with broadcasting.
-    fn eq<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn eq<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise inequality with broadcasting.
-    fn neq<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn neq<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise greater-than with broadcasting.
-    fn gt<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn gt<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise less-than with broadcasting.
-    fn lt<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn lt<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise greater-than-or-equal with broadcasting.
-    fn ge<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn ge<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
     /// Element-wise less-than-or-equal with broadcasting.
-    fn le<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(&self, other: &Rhs) -> Result<bool, Self::Error>;
+    fn le<Rhs: AccessOps<Item = Self::Item, Error = Self::Error>>(
+        &self,
+        other: &Rhs,
+    ) -> Result<bool, Self::Error>;
 }
 
 pub trait ShapeOps: ArrayLike {
@@ -350,15 +382,24 @@ pub trait ShapeOps: ArrayLike {
     /// Broadcast to a new shape.
     fn broadcast_to(&self, shape: &[usize]) -> Result<Self::Output, Self::Error>;
     /// Concatenate arrays along an axis.
-    fn concatenate(&self, arrays: &[Self::View<'_>], axis: usize) -> Result<Self::Output, Self::Error>;
+    fn concatenate(
+        &self,
+        arrays: &[Self::View<'_>],
+        axis: usize,
+    ) -> Result<Self::Output, Self::Error>;
     /// Stack arrays along a new axis.
     fn stack(&self, arrays: &[Self::View<'_>], axis: usize) -> Result<Self::Output, Self::Error>;
     /// Split array into multiple sub-arrays.
-    fn split(&self, indices_or_sections: usize, axis: usize) -> Result<Vec<Self::Output>, Self::Error>;
+    fn split(
+        &self,
+        indices_or_sections: usize,
+        axis: usize,
+    ) -> Result<Vec<Self::Output>, Self::Error>;
     /// Roll elements along an axis.
     fn roll(&self, shift: isize, axis: Option<usize>) -> Result<Self::Output, Self::Error>;
     /// Pad array with constant/edge values.
-    fn pad(&self, pad_width: &[(usize, usize)], mode: PadMode) -> Result<Self::Output, Self::Error>;
+    fn pad(&self, pad_width: &[(usize, usize)], mode: PadMode)
+    -> Result<Self::Output, Self::Error>;
     /// Repeat array by tiling.
     fn tile(&self, reps: &[usize]) -> Result<Self::Output, Self::Error>;
 }

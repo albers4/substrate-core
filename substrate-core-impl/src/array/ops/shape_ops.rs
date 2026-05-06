@@ -4,7 +4,8 @@
 use substrate_core_spec::array::{
     ArrayLike, ArrayViewLike,
     memory_order::MemoryOrder,
-    ops::{AccessOps, ConvertOps, ShapeOps}, pad_mode::PadMode,
+    ops::{AccessOps, ConvertOps, ShapeOps},
+    pad_mode::PadMode,
 };
 
 use crate::{
@@ -282,18 +283,14 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]).reshape_copy(&[1, 3, 1]).unwrap();
     /// let squeezed = a.view().squeeze().unwrap();
     /// assert_eq!(squeezed.shape(), &[3]);
     /// assert_eq!(squeezed.to_vec(), vec![1.0, 2.0, 3.0]);
     /// ```
     fn squeeze(&self) -> Result<Self::Output, Self::Error> {
-        let new_shape: Vec<usize> = self.shape()
-            .iter()
-            .filter(|&&d| d != 1)
-            .copied()
-            .collect();
+        let new_shape: Vec<usize> = self.shape().iter().filter(|&&d| d != 1).copied().collect();
         if new_shape.is_empty() {
             let data = vec![*self.iter().next().ok_or(ArrayError::EmptyArray)?];
             return Array::from_vec_with_shape(data, &[1]);
@@ -328,7 +325,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]);
     /// let unsqueezed = a.view().unsqueeze(0).unwrap();
     /// assert_eq!(unsqueezed.shape(), &[1, 3]);
@@ -375,7 +372,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0, 2.0, 3.0]);
     /// // Shape [3] can broadcast to [2, 3] (repeat once along axis 0)
     /// let b = a.view().broadcast_to(&[2, 3]).unwrap();
@@ -389,7 +386,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         let offset = self.offset();
         let mut data = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx = offset;
             for dim in (0..target_shape.len()).rev() {
@@ -397,7 +394,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
                 rem /= target_shape[dim];
                 idx += coord * strides[dim];
             }
-            data[flat_idx] = unsafe { *self.data.as_ptr().add(idx) };
+            *flat_item = unsafe { *self.data.as_ptr().add(idx) };
         }
 
         Array::from_vec_with_shape(data, &target_shape)
@@ -426,14 +423,18 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0, 2.0]);
     /// let b = Array::from_vec(vec![3.0, 4.0]);
     /// let c = a.view().concatenate(&[b.view()], 0).unwrap();
     /// assert_eq!(c.shape(), &[4]);
     /// assert_eq!(c.to_vec(), vec![1.0,2.0,3.0,4.0]);
     /// ```
-    fn concatenate(&self, arrays: &[ArrayView<'_, f64>], axis: usize) -> Result<Self::Output, Self::Error> {
+    fn concatenate(
+        &self,
+        arrays: &[ArrayView<'_, f64>],
+        axis: usize,
+    ) -> Result<Self::Output, Self::Error> {
         if axis >= self.ndim() {
             return Err(ArrayError::AxisOutOfBounds);
         }
@@ -490,14 +491,18 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0, 2.0]);
     /// let b = Array::from_vec(vec![3.0, 4.0]);
     /// let stacked = a.view().stack(&[b.view()], 0).unwrap();
     /// assert_eq!(stacked.shape(), &[2, 2]);
     /// assert_eq!(stacked.to_vec(), vec![1.0,2.0,3.0,4.0]);
     /// ```
-    fn stack(&self, arrays: &[ArrayView<'_, f64>], axis: usize) -> Result<Self::Output, Self::Error> {
+    fn stack(
+        &self,
+        arrays: &[ArrayView<'_, f64>],
+        axis: usize,
+    ) -> Result<Self::Output, Self::Error> {
         if axis > self.ndim() {
             return Err(ArrayError::AxisOutOfBounds);
         }
@@ -546,7 +551,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0,2.0,3.0,4.0,5.0,6.0]).reshape_copy(&[2,3]).unwrap();
     /// let splits = a.view().split(3, 1).unwrap();
     /// assert_eq!(splits.len(), 3);
@@ -554,13 +559,17 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// assert_eq!(splits[1].to_vec(), vec![2.0, 5.0]);
     /// assert_eq!(splits[2].to_vec(), vec![3.0, 6.0]);
     /// ```
-    fn split(&self, indices_or_sections: usize, axis: usize) -> Result<Vec<Self::Output>, Self::Error> {
+    fn split(
+        &self,
+        indices_or_sections: usize,
+        axis: usize,
+    ) -> Result<Vec<Self::Output>, Self::Error> {
         if axis >= self.ndim() {
             return Err(ArrayError::AxisOutOfBounds);
         }
 
         let dim_size = self.shape()[axis];
-        if dim_size % indices_or_sections != 0 {
+        if !dim_size.is_multiple_of(indices_or_sections) {
             return Err(ArrayError::InvalidSplit);
         }
 
@@ -611,7 +620,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0,2.0,3.0,4.0]);
     /// let rolled = a.view().roll(2, None).unwrap();
     /// assert_eq!(rolled.to_vec(), vec![3.0,4.0,1.0,2.0]);
@@ -631,9 +640,9 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         }
         // Full flat roll
         let shift_mod = shift.rem_euclid(total_len as isize) as usize;
-        for i in 0..total_len {
+        for (i, item) in data.iter_mut().enumerate() {
             let src = (i + total_len - shift_mod) % total_len;
-            data[i] = *self.get_flat(src)?;
+            *item = *self.get_flat(src)?;
         }
 
         let shape = self.shape().to_vec();
@@ -664,21 +673,25 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::pad_mode::PadMode;
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0,2.0,3.0]);
     /// let padded = a.view().pad(&[(1,1)], PadMode::Constant(0.0)).unwrap();
     /// assert_eq!(padded.shape(), &[5]);
     /// assert_eq!(padded.to_vec(), vec![0.0,1.0,2.0,3.0,0.0]);
     /// ```
-    fn pad(&self, pad_width: &[(usize, usize)], mode: PadMode) -> Result<Self::Output, Self::Error> {
+    fn pad(
+        &self,
+        pad_width: &[(usize, usize)],
+        mode: PadMode,
+    ) -> Result<Self::Output, Self::Error> {
         let ndim = self.ndim();
         if pad_width.len() != ndim {
             return Err(ArrayError::DimensionMismatch);
         }
 
         let mut new_shape = Vec::with_capacity(ndim);
-        for d in 0..ndim {
-            let (before, after) = pad_width[d];
+        for (d, item) in pad_width.iter().enumerate().take(ndim) {
+            let (before, after) = item;
             new_shape.push(self.shape()[d] + before + after);
         }
 
@@ -687,8 +700,8 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         let out_strides = compute_strides(&new_shape, self.order());
 
         if let PadMode::Constant(constant) = mode {
-            for i in 0..total_len {
-                data[i] = constant;
+            for item in data.iter_mut() {
+                *item = constant;
             }
         } else {
             return Err(ArrayError::NotImplemented);
@@ -701,7 +714,8 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
             for d in 0..ndim {
                 out_coords[d] += pad_width[d].0;
             }
-            let out_flat = out_coords.iter()
+            let out_flat = out_coords
+                .iter()
                 .enumerate()
                 .fold(0, |idx, (i, &c)| idx + c * out_strides[i]);
             data[out_flat] = *self.get_flat(flat_idx)?;
@@ -730,7 +744,7 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
     /// use substrate_core_impl::Array;
     /// use substrate_core_spec::array::ops::{InitOps, ShapeOps, ConvertOps};
     /// use substrate_core_spec::array::ArrayLike;
-    /// 
+    ///
     /// let a = Array::from_vec(vec![1.0,2.0]);
     /// let tiled = a.view().tile(&[3]).unwrap();
     /// assert_eq!(tiled.shape(), &[6]);
@@ -743,11 +757,11 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         }
 
         let mut new_shape = Vec::with_capacity(reps.len());
-        for d in 0..reps.len() {
+        for (d, rep) in reps.iter().enumerate() {
             if d < ndim {
-                new_shape.push(self.shape()[d] * reps[d]);
+                new_shape.push(self.shape()[d] * rep);
             } else {
-                new_shape.push(reps[d]);
+                new_shape.push(*rep);
             }
         }
 
@@ -755,15 +769,15 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         let mut data = vec![0.0; total_len];
         let out_strides = compute_strides(&new_shape, self.order());
 
-        for out_flat in 0..total_len {
+        for (out_flat, out_item) in data.iter_mut().enumerate() {
             let out_coords = unravel_index(out_flat, &new_shape, self.order())?;
             let mut in_coords = Vec::with_capacity(ndim);
 
-            for d in 0..ndim {
-                in_coords.push(out_coords[d] % self.shape()[d]);
+            for (d, out_coord) in out_coords.iter().enumerate() {
+                in_coords.push(out_coord % self.shape()[d]);
             }
             let in_flat = self.physical_from_indices(&in_coords)?;
-            data[out_flat] = self.data[in_flat];
+            *out_item = self.data[in_flat];
         }
 
         Ok(Array {
@@ -861,21 +875,33 @@ impl ShapeOps for Array<f64, Vec<f64>> {
     /// Concatenates the view with a list of other views along the specified axis.
     ///
     /// See [`ArrayView::concatenate`] for details.
-    fn concatenate(&self, arrays: &[ArrayView<'_, f64>], axis: usize) -> Result<Self::Output, Self::Error> {
+    fn concatenate(
+        &self,
+        arrays: &[ArrayView<'_, f64>],
+        axis: usize,
+    ) -> Result<Self::Output, Self::Error> {
         self.view().concatenate(arrays, axis)
     }
 
     /// Stacks the view and a list of other views along a new axis.
     ///
     /// See [`ArrayView::stack`] for details.
-    fn stack(&self, arrays: &[ArrayView<'_, f64>], axis: usize) -> Result<Self::Output, Self::Error> {
+    fn stack(
+        &self,
+        arrays: &[ArrayView<'_, f64>],
+        axis: usize,
+    ) -> Result<Self::Output, Self::Error> {
         self.view().stack(arrays, axis)
     }
 
     /// Splits the array into multiple sub‑arrays along the given axis.
     ///
     /// See [`ArrayView::split`] for details.
-    fn split(&self, indices_or_sections: usize, axis: usize) -> Result<Vec<Self::Output>, Self::Error> {
+    fn split(
+        &self,
+        indices_or_sections: usize,
+        axis: usize,
+    ) -> Result<Vec<Self::Output>, Self::Error> {
         self.view().split(indices_or_sections, axis)
     }
 
@@ -888,7 +914,11 @@ impl ShapeOps for Array<f64, Vec<f64>> {
 
     ///
     /// See [`ArrayView::pad`] for details.
-    fn pad(&self, pad_width: &[(usize, usize)], mode: PadMode) -> Result<Self::Output, Self::Error> {
+    fn pad(
+        &self,
+        pad_width: &[(usize, usize)],
+        mode: PadMode,
+    ) -> Result<Self::Output, Self::Error> {
         self.view().pad(pad_width, mode)
     }
 

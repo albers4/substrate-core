@@ -1,9 +1,9 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-use substrate_core_spec::array::{ArrayLike, ops::{AccessOps, InitOps}};
 use rand::RngExt;
 use rand_distr::StandardNormal;
+use substrate_core_spec::array::ops::{AccessOps, InitOps};
 
 use crate::{Array, array::error::ArrayError};
 
@@ -33,8 +33,8 @@ impl InitOps for Array<f64, Vec<f64>> {
     /// let a = Array::rand(&[2, 3]).unwrap();
     /// assert_eq!(a.shape(), &[2, 3]);
     /// ```
-    fn rand(shape: &[usize]) -> Result<Self::Output, Self::Error>  {
-        let size= shape.iter().product::<usize>();
+    fn rand(shape: &[usize]) -> Result<Self::Output, Self::Error> {
+        let size = shape.iter().product::<usize>();
         let mut rng = rand::rng();
         let data = (0..size).map(|_| rng.random()).collect();
         Array::from_vec_with_shape(data, shape)
@@ -65,7 +65,7 @@ impl InitOps for Array<f64, Vec<f64>> {
     /// assert_eq!(a.shape(), &[2, 3]);
     /// ```
     fn randn(shape: &[usize]) -> Result<Self::Output, Self::Error> {
-        let size= shape.iter().product::<usize>();
+        let size = shape.iter().product::<usize>();
         let mut rng = rand::rng();
         let data = (0..size).map(|_| rng.sample(StandardNormal)).collect();
         Array::from_vec_with_shape(data, shape)
@@ -121,7 +121,9 @@ impl InitOps for Array<f64, Vec<f64>> {
     /// assert_eq!(m.shape(), &[3, 3]);
     /// assert_eq!(m.to_vec(), vec![1.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 3.0]);
     /// ```
-    fn diag(diag: &(impl ArrayLike + AccessOps<Item = Self::Item, Error = Self::Error>)) -> Result<Self::Output, Self::Error> {
+    fn diag(
+        diag: &impl AccessOps<Item = Self::Item, Error = Self::Error>,
+    ) -> Result<Self::Output, Self::Error> {
         if diag.ndim() != 1 {
             return Err(ArrayError::DimensionMismatch);
         }
@@ -186,7 +188,11 @@ impl InitOps for Array<f64, Vec<f64>> {
     /// let a = Array::arange(0.0, 5.0, 1.0).unwrap();
     /// assert_eq!(a.to_vec(), vec![0.0, 1.0, 2.0, 3.0, 4.0]);
     /// ```
-    fn arange(start: Self::Item, end: Self::Item, step: Self::Item) -> Result<Self::Output, Self::Error> {
+    fn arange(
+        start: Self::Item,
+        end: Self::Item,
+        step: Self::Item,
+    ) -> Result<Self::Output, Self::Error> {
         if step <= 0.0 {
             return Err(ArrayError::InvalidStep);
         }
@@ -197,7 +203,9 @@ impl InitOps for Array<f64, Vec<f64>> {
         for _ in 0..n {
             data.push(val);
             val += step;
-            if val >= end { break; }
+            if val >= end {
+                break;
+            }
         }
         let len = data.len();
         Array::from_vec_with_shape(data, &[len])

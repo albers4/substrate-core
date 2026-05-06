@@ -3,9 +3,9 @@
 
 pub mod index;
 pub mod memory_order;
-pub mod pad_mode;
 pub mod number;
 pub mod ops;
+pub mod pad_mode;
 pub mod storage;
 
 use memory_order::MemoryOrder;

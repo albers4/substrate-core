@@ -860,16 +860,16 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
             return Err(ArrayError::EmptyArray);
         }
 
-        let (idx, _) =
-            self.iter()
-                .enumerate()
-                .fold((0, f64::NEG_INFINITY), |(best_idx, best_val), (i, &x)| {
-                    if x > best_val {
-                        (i, x)
-                    } else {
-                        (best_idx, best_val)
-                    }
-                });
+        let (idx, _) = self.iter().enumerate().fold(
+            (0, f64::NEG_INFINITY),
+            |(best_idx, best_val), (i, &x)| {
+                if x > best_val {
+                    (i, x)
+                } else {
+                    (best_idx, best_val)
+                }
+            },
+        );
         Ok(Array::from_scalar(idx as f64))
     }
 

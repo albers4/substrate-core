@@ -337,12 +337,12 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
 
         let out_shape = indices.shape().to_vec();
         let mut out_data = vec![0.0; indices.length()];
-        for out_flat in 0..indices.length() {
+        for (out_flat, out_item) in out_data.iter_mut().enumerate() {
             let out_coords = unravel_index(out_flat, indices.shape(), indices.order())?;
             let mut src_coords = out_coords.clone();
             src_coords[dim] = *indices.get_flat(out_flat)? as usize;
             let src_flat = self.physical_from_indices(&src_coords)?;
-            out_data[out_flat] = self.data[src_flat];
+            *out_item = self.data[src_flat];
         }
 
         Array::from_vec_with_shape(out_data, &out_shape)

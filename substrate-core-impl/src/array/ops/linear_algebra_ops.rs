@@ -19,11 +19,11 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
     where
         Self: 'b;
 
-    fn dot<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn dot<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 
-    fn matmul<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn matmul<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 
@@ -152,7 +152,7 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
         todo!()
     }
 
-    fn cross<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn cross<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 }
@@ -164,11 +164,11 @@ impl LinearAlgebraOps for Array<f64, Vec<f64>> {
     where
         Self: 'b;
 
-    fn dot<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn dot<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 
-    fn matmul<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn matmul<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 
@@ -235,7 +235,7 @@ impl LinearAlgebraOps for Array<f64, Vec<f64>> {
         todo!()
     }
 
-    fn cross<Rhs: AccessOps>(&self, other: &Rhs) -> Result<Self::Output, Self::Error> {
+    fn cross<Rhs: AccessOps>(&self, _other: &Rhs) -> Result<Self::Output, Self::Error> {
         todo!()
     }
 }

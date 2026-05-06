@@ -77,7 +77,7 @@ impl<'a> ConvertOps for ArrayView<'a, f64> {
 
     /// Create an `ArrayView` from an `ArrayView`.
     fn view(&self) -> Self::View<'_> {
-        return self.clone();
+        self.clone()
     }
 }
 

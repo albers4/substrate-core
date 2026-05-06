@@ -53,7 +53,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -69,7 +69,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a + b;
+                *flat_item = a + b;
             }
         }
 
@@ -113,7 +113,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -129,7 +129,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a - b;
+                *flat_item = a - b;
             }
         }
 
@@ -173,7 +173,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -189,7 +189,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a * b;
+                *flat_item = a * b;
             }
         }
 
@@ -233,7 +233,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -249,7 +249,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a / b;
+                *flat_item = a / b;
             }
         }
 
@@ -293,7 +293,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -309,7 +309,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a.powf(b);
+                *flat_item = a.powf(b);
             }
         }
 
@@ -353,7 +353,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![0.0; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -369,7 +369,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a % b;
+                *flat_item = a % b;
             }
         }
 
@@ -413,7 +413,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![f64::NEG_INFINITY; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -429,7 +429,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a.max(b);
+                *flat_item = a.max(b);
             }
         }
 
@@ -473,7 +473,7 @@ impl<'a> ArrayView<'a, f64> {
 
         let mut data: Vec<f64> = vec![f64::INFINITY; total_len];
 
-        for flat_idx in 0..total_len {
+        for (flat_idx, flat_item) in data.iter_mut().enumerate() {
             let mut rem = flat_idx;
             let mut idx_self = offset_self;
             let mut idx_other = offset_other;
@@ -489,7 +489,7 @@ impl<'a> ArrayView<'a, f64> {
             unsafe {
                 let a = *self.data.as_ptr().add(idx_self);
                 let b = *other.data().as_ptr().add(idx_other);
-                data[flat_idx] = a.min(b);
+                *flat_item = a.min(b);
             }
         }
 
@@ -529,11 +529,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.add_same_shape(other);
+            self.add_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.add_scalar(other);
+            self.add_scalar(other)
         } else {
-            return self.add_broadcast(other);
+            self.add_broadcast(other)
         }
     }
 
@@ -566,11 +566,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.sub_same_shape(other);
+            self.sub_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.sub_scalar(other);
+            self.sub_scalar(other)
         } else {
-            return self.sub_broadcast(other);
+            self.sub_broadcast(other)
         }
     }
 
@@ -603,11 +603,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.mul_same_shape(other);
+            self.mul_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.mul_scalar(other);
+            self.mul_scalar(other)
         } else {
-            return self.mul_broadcast(other);
+            self.mul_broadcast(other)
         }
     }
 
@@ -640,11 +640,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.div_same_shape(other);
+            self.div_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.div_scalar(other);
+            self.div_scalar(other)
         } else {
-            return self.div_broadcast(other);
+            self.div_broadcast(other)
         }
     }
 
@@ -677,11 +677,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.pow_same_shape(other);
+            self.pow_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.pow_scalar(other);
+            self.pow_scalar(other)
         } else {
-            return self.pow_broadcast(other);
+            self.pow_broadcast(other)
         }
     }
 
@@ -714,11 +714,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.rem_same_shape(other);
+            self.rem_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.rem_scalar(other);
+            self.rem_scalar(other)
         } else {
-            return self.rem_broadcast(other);
+            self.rem_broadcast(other)
         }
     }
 
@@ -751,11 +751,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.max_same_shape(other);
+            self.max_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.max_scalar(other);
+            self.max_scalar(other)
         } else {
-            return self.max_broadcast(other);
+            self.max_broadcast(other)
         }
     }
 
@@ -788,11 +788,11 @@ impl<'a> BinaryOps for ArrayView<'a, f64> {
         other: &Rhs,
     ) -> Result<Self::Output, Self::Error> {
         if self.shape() == other.shape() {
-            return self.min_same_shape(other);
+            self.min_same_shape(other)
         } else if other.ndim() == 0 {
-            return self.min_scalar(other);
+            self.min_scalar(other)
         } else {
-            return self.min_broadcast(other);
+            self.min_broadcast(other)
         }
     }
 }
