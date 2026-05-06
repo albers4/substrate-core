@@ -4,7 +4,7 @@
 use pyo3::prelude::*;
 use pyo3::types::PyModule;
 use substrate_core_impl::Array;
-use substrate_core_spec::array::{ops::InitOps, ArrayLike};
+use substrate_core_spec::array::{ArrayLike, ops::InitOps};
 
 #[pyclass]
 struct PyArray {

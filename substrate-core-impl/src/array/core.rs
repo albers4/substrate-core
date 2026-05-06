@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 use substrate_core_spec::array::{
-    ArrayLike, index::ToIndex, memory_order::MemoryOrder,
-    number::Number, storage::Storage,
+    ArrayLike, index::ToIndex, memory_order::MemoryOrder, number::Number, storage::Storage,
 };
 
-use crate::array::{
-    ArrayView, error::ArrayError, utils::compute_strides
-};
+use crate::array::{error::ArrayError, utils::compute_strides};
 
 pub struct Array<T: Number, S: Storage<Item = T>> {
     pub(crate) storage: S,
@@ -82,19 +79,10 @@ impl Array<f64, Vec<f64>> {
             order: Default::default(),
         })
     }
-
-    //pub fn view(&self) -> ArrayView<'a> {
-    //    ArrayView {
-    //        data: &self.storage,
-    //        shape: self.shape.to_vec(),
-    //        strides: self.strides.to_vec(),
-    //        offset: self.offset,
-    //        order: self.order,
-    //    }
-    //}
 }
 
 impl ArrayLike for Array<f64, Vec<f64>> {
+    type Item = f64;
     type Error = ArrayError;
 
     fn length(&self) -> usize {

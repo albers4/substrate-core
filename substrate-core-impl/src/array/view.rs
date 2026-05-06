@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 use substrate_core_spec::array::{
-    ArrayLike, ArrayViewLike, index::ToIndex, memory_order::MemoryOrder, number::Number
+    ArrayLike, ArrayViewLike, index::ToIndex, memory_order::MemoryOrder, number::Number,
 };
 
-use crate::array::{Array, core::OwnedArray, error::ArrayViewError};
+use crate::array::{Array, core::OwnedArray, error::ArrayError};
 
 #[derive(Clone)]
 pub struct ArrayView<'a, T: Number> {
@@ -17,7 +17,8 @@ pub struct ArrayView<'a, T: Number> {
 }
 
 impl<'a> ArrayLike for ArrayView<'a, f64> {
-    type Error = ArrayViewError;
+    type Item = f64;
+    type Error = ArrayError;
 
     fn length(&self) -> usize {
         self.storage_length() - self.offset
@@ -68,16 +69,16 @@ impl<'a> ArrayLike for ArrayView<'a, f64> {
 
     fn physical_from_indices(&self, indices: &[impl ToIndex]) -> Result<usize, Self::Error> {
         if indices.len() != self.ndim() {
-            return Err(ArrayViewError::DimensionMismatch);
+            return Err(ArrayError::DimensionMismatch);
         }
 
         let mut index = self.offset();
         for (i, idx) in indices.iter().enumerate() {
             let dim = idx
                 .to_index()
-                .map_err(|_| ArrayViewError::IndexConversionError)?;
+                .map_err(|_| ArrayError::IndexConversionError)?;
             if dim >= self.shape[i] {
-                return Err(ArrayViewError::IndexOutOfBounds);
+                return Err(ArrayError::IndexOutOfBounds);
             }
             index += dim * self.strides[i];
         }
@@ -86,7 +87,7 @@ impl<'a> ArrayLike for ArrayView<'a, f64> {
 
     fn physical_from_logical_flat(&self, index: usize) -> Result<usize, Self::Error> {
         if index >= self.length() {
-            return Err(ArrayViewError::IndexOutOfBounds);
+            return Err(ArrayError::IndexOutOfBounds);
         }
 
         if self.is_contiguous() {

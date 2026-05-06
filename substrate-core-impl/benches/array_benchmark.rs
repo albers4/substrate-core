@@ -6,7 +6,7 @@ use std::hint::black_box;
 use criterion::{Criterion, criterion_group, criterion_main};
 use pprof::criterion::{Output, PProfProfiler};
 use substrate_core_impl::Array;
-use substrate_core_spec::array::{ops::InitOps, ArrayLike};
+use substrate_core_spec::array::{ArrayLike, ops::InitOps};
 
 fn array_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("array_creation");

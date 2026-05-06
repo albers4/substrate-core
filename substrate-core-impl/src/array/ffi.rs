@@ -11,14 +11,20 @@ unsafe extern "C" {
     pub fn array_destroy(arr: *mut ArrayHandle);
     pub fn array_add(result: *mut ArrayHandle, a: *const ArrayHandle, b: *const ArrayHandle);
     pub fn array_add_backward(
-        res: *mut ArrayHandle, dres: *mut ArrayHandle,
-        a: *const ArrayHandle, da: *mut ArrayHandle,
-        b: *const ArrayHandle, db: *mut ArrayHandle
+        res: *mut ArrayHandle,
+        dres: *mut ArrayHandle,
+        a: *const ArrayHandle,
+        da: *mut ArrayHandle,
+        b: *const ArrayHandle,
+        db: *mut ArrayHandle,
     );
     pub fn array_add_forward(
-        res: *mut ArrayHandle, dres: *mut ArrayHandle,
-        a: *const ArrayHandle, da: *mut ArrayHandle,
-        b: *const ArrayHandle, db: *mut ArrayHandle
+        res: *mut ArrayHandle,
+        dres: *mut ArrayHandle,
+        a: *const ArrayHandle,
+        da: *mut ArrayHandle,
+        b: *const ArrayHandle,
+        db: *mut ArrayHandle,
     );
     pub fn array_copy(arr: *const ArrayHandle, buffer: *mut f64, len: usize);
 }
@@ -46,11 +52,14 @@ impl CppArray {
         let da = CppArray::new(vec![0.0; a.len]);
         let db = CppArray::new(vec![0.0; a.len]);
 
-        unsafe { 
+        unsafe {
             array_add_backward(
-                res.handle, dres.handle,
-                a.handle, da.handle,
-                b.handle, db.handle
+                res.handle,
+                dres.handle,
+                a.handle,
+                da.handle,
+                b.handle,
+                db.handle,
             );
         }
 
@@ -61,11 +70,14 @@ impl CppArray {
         let res = CppArray::new(vec![0.0; a.len]);
         let dres = CppArray::new(vec![0.0; a.len]);
 
-        unsafe { 
+        unsafe {
             array_add_forward(
-                res.handle, dres.handle,
-                a.handle, da.handle,
-                b.handle, db.handle
+                res.handle,
+                dres.handle,
+                a.handle,
+                da.handle,
+                b.handle,
+                db.handle,
             );
         }
 
@@ -74,13 +86,15 @@ impl CppArray {
 
     pub fn to_vec(&self) -> Vec<f64> {
         let mut buffer = vec![0.0; self.len];
-        unsafe { array_copy(self.handle, buffer.as_mut_ptr(), self.len ) };
+        unsafe { array_copy(self.handle, buffer.as_mut_ptr(), self.len) };
         buffer
     }
 }
 
 impl Drop for CppArray {
     fn drop(&mut self) {
-        unsafe { array_destroy(self.handle); }
+        unsafe {
+            array_destroy(self.handle);
+        }
     }
 }

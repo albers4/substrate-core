@@ -3,11 +3,12 @@
 
 mod arr_macro;
 mod core;
+mod display;
 mod error;
-mod utils;
-mod view;
 mod ffi;
 mod ops;
+mod utils;
+mod view;
 
 pub use core::Array;
 pub use view::ArrayView;

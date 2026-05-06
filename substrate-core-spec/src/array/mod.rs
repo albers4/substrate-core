@@ -3,15 +3,17 @@
 
 pub mod index;
 pub mod memory_order;
+pub mod pad_mode;
 pub mod number;
-pub mod storage;
 pub mod ops;
+pub mod storage;
 
 use memory_order::MemoryOrder;
 
-use crate::array::index::ToIndex;
+use crate::array::{index::ToIndex, number::Number};
 
 pub trait ArrayLike {
+    type Item: Number;
     type Error;
 
     fn length(&self) -> usize;
