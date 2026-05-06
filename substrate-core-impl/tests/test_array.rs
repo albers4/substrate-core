@@ -1,7 +1,7 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-use substrate_core_impl::{Array, ArrayError, CppArray};
+use substrate_core_impl::{Array, CppArray};
 use substrate_core_spec::array::{
     ArrayLike,
     ops::{AccessOps, ConvertOps, InitOps, LinearAlgebraOps, ShapeOps},
@@ -36,7 +36,7 @@ fn test_squeeze() {
     // 1. Scalar (0‑dimensional) -> remains scalar (shape [])
     let a = Array::from_vec(vec![42.0]);
     let squeezed = a.view().squeeze().unwrap();
-    assert_eq!(squeezed.shape(), &[]);
+    assert_eq!(squeezed.shape(), &[] as &[usize]);
     assert_eq!(squeezed.to_scalar().unwrap(), 42.0);
 
     // 2. Remove single dimension of size 1 at beginning
@@ -97,6 +97,6 @@ fn test_squeeze() {
     // 9. Perform a squeeze that results in a scalar (all dimensions removed)
     let a = Array::from_vec(vec![99.0]).reshape(&[1, 1, 1]).unwrap();
     let squeezed = a.view().squeeze().unwrap();
-    assert_eq!(squeezed.shape(), &[]);
+    assert_eq!(squeezed.shape(), &[] as &[usize]);
     assert_eq!(squeezed.to_scalar().unwrap(), 99.0);
 }

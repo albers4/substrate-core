@@ -84,9 +84,9 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
     /// use substrate_core_spec::array::ArrayLike;
     /// use substrate_core_spec::array::ops::{InitOps, LinearAlgebraOps, ConvertOps, AccessOps, ShapeOps};
     ///
-    /// let a = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[2, 3]).unwrap().to_row_major().unwrap();
+    /// let a = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[2, 3]).unwrap();
     /// assert_eq!(a.shape(), [2, 3]);
-    /// let b = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[3, 2]).unwrap().to_column_major().unwrap();
+    /// let b = Array::from_vec_with_shape(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[3, 2]).unwrap();
     /// assert_eq!(b.shape(), [3, 2]);
     /// let ab = a.view().matmul(&b.view()).unwrap();
     /// assert_eq!(ab.shape(), [2, 2]);

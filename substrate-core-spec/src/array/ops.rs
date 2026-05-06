@@ -372,8 +372,12 @@ pub trait ShapeOps: ArrayLike {
     fn reshape(self, new_shape: &[usize]) -> Result<Self::Output, Self::Error>;
     /// Convert to contiguous row-major (C order).
     fn to_row_major(self) -> Result<Self::Output, Self::Error>;
+    /// Copies the view into a contiguous row‑major owned array.
+    fn to_row_major_copy(&self) -> Result<Self::Output, Self::Error>;
     /// Convert to contiguous column-major (Fortran order).
     fn to_column_major(self) -> Result<Self::Output, Self::Error>;
+    /// Copies the view into a contiguous column‑major owned array.
+    fn to_column_major_copy(&self) -> Result<Self::Output, Self::Error>;
     /// Flatten to 1-D (row-major).
     fn flatten(&self) -> Result<Self::Output, Self::Error>;
     /// Removes axes of size 1.

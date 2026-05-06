@@ -36,7 +36,7 @@ impl<'a> ReduceOps for ArrayView<'a, f64> {
     /// let v = a.view();
     /// let s = v.sum().unwrap();
     /// assert_eq!(s.to_scalar().unwrap(), 6.0);
-    /// assert_eq!(s.shape(), []);
+    /// assert_eq!(s.shape(), &[] as &[usize]);
     /// ```
     fn sum(&self) -> Result<Self::Output, Self::Error> {
         if self.is_empty() {

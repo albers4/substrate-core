@@ -21,18 +21,20 @@ impl<'a> ArrayView<'a, f64> {
         &self,
         other: &ArrayView<'_, f64>,
     ) -> Result<Array<f64, Vec<f64>>, ArrayError> {
-        let (m, _k) = (self.shape[0], self.shape[1]);
-        let (_, n) = (other.shape()[0], other.shape()[1]);
+        let a_row = self.to_row_major_copy().unwrap();
+        let b_row = other.to_column_major_copy().unwrap();
+        let (m, _k) = (a_row.shape[0], a_row.shape[1]);
+        let (_, n) = (b_row.shape()[0], b_row.shape()[1]);
         let out_shape = vec![m, n];
         let out_strides = compute_strides(&out_shape, MemoryOrder::RowMajor);
 
         let result = (0..m)
             .into_par_iter()
             .flat_map(|i| {
-                let row = self.slice_by_range(0, i..i + 1).unwrap().squeeze().unwrap();
+                let row = a_row.slice_by_range(0, i..i + 1).unwrap().squeeze().unwrap();
                 (0..n)
                     .map(|j| {
-                        let col = other
+                        let col = b_row
                             .slice_by_range(1, j..j + 1)
                             .unwrap()
                             .squeeze()

@@ -8,7 +8,7 @@ use {
         array::{ArrayView, error::ArrayError, utils::compute_strides},
     },
     rayon::prelude::*,
-    substrate_core_spec::array::{ArrayLike, memory_order::MemoryOrder, ops::AccessOps},
+    substrate_core_spec::array::{ArrayLike, memory_order::MemoryOrder, ops::{AccessOps, ShapeOps}},
 };
 
 #[cfg(feature = "parallel")]
@@ -17,8 +17,10 @@ impl<'a> ArrayView<'a, f64> {
         &self,
         other: &ArrayView<'_, f64>,
     ) -> Result<Array<f64, Vec<f64>>, ArrayError> {
-        let (m, k) = (self.shape[0], self.shape[1]);
-        let (_, n) = (other.shape()[0], other.shape()[1]);
+        let a_row = self.to_row_major_copy().unwrap();
+        let b_row = other.to_column_major_copy().unwrap();
+        let (m, k) = (a_row.shape[0], a_row.shape[1]);
+        let (_, n) = (b_row.shape()[0], b_row.shape()[1]);
         let out_shape = vec![m, n];
         let out_strides = compute_strides(&out_shape, MemoryOrder::RowMajor);
 
@@ -28,8 +30,8 @@ impl<'a> ArrayView<'a, f64> {
             for j in 0..n {
                 let mut sum = 0.0;
                 for p in 0..k {
-                    let a = *self.get(&[i, p]).unwrap();
-                    let b = *other.get(&[p, j]).unwrap();
+                    let a = *a_row.get(&[i, p]).unwrap();
+                    let b = *b_row.get(&[p, j]).unwrap();
                     sum += a * b;
                 }
                 row[j] = sum;

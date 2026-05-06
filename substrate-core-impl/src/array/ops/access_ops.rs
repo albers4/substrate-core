@@ -63,8 +63,8 @@ impl<'a> AccessOps for ArrayView<'a, f64> {
     /// let a = Array::from_vec_with_shape(vec!(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), &[2, 3]).unwrap();
     /// let a_slice = a.slice_by_indices(&[1, 1]).unwrap();
     /// let res: f64 = *a_slice.first().unwrap();
-    /// assert_eq!(a_slice.shape(), []);
-    /// assert_eq!(a_slice.strides(), []);
+    /// assert_eq!(a_slice.shape(), &[] as &[usize]);
+    /// assert_eq!(a_slice.strides(), &[] as &[usize]);
     /// assert_eq!(res, 5.0);
     /// assert_eq!(a_slice.ndim(), 0);
     /// assert_eq!(a_slice.size(), 1);

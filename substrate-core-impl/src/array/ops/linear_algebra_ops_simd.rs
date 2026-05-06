@@ -25,17 +25,19 @@ impl<'a> ArrayView<'a, f64> {
         &self,
         other: &ArrayView<'_, f64>,
     ) -> Result<Array<f64, Vec<f64>>, ArrayError> {
-        let (m, _k) = (self.shape[0], self.shape[1]);
-        let (_, n) = (other.shape()[0], other.shape()[1]);
+        let a_row = self.to_row_major_copy().unwrap();
+        let b_row = other.to_column_major_copy().unwrap();
+        let (m, _k) = (a_row.shape[0], a_row.shape[1]);
+        let (_, n) = (b_row.shape()[0], b_row.shape()[1]);
         let out_shape = vec![m, n];
         let out_strides = compute_strides(&out_shape, MemoryOrder::RowMajor);
 
         let mut result = vec![0.0; m * n];
 
         for i in 0..m {
-            let row = self.slice_by_range(0, i..i + 1)?.squeeze()?;
+            let row = a_row.slice_by_range(0, i..i + 1)?.squeeze()?;
             for j in 0..n {
-                let col = other.slice_by_range(1, j..j + 1)?.squeeze()?;
+                let col = b_row.slice_by_range(1, j..j + 1)?.squeeze()?;
                 let dot_val = row.view().dot(&col.view())?.to_scalar()?;
                 result[i * n + j] = dot_val;
             }

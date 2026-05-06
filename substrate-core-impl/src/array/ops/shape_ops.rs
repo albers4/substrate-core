@@ -185,6 +185,56 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         })
     }
 
+    ///
+    /// This does not consume the view and is safe to call from a shared reference.
+    /// If the view is already in canonical row‑major order (contiguous, correct strides),
+    /// this method copies the data directly via the iterator (still copies, but avoids the
+    /// expensive per‑index mapping). Otherwise, it uses the general indexing loop.
+    ///
+    /// # Returns
+    /// A new `Array<f64, Vec<f64>>` in row‑major (C) order, always contiguous.
+    ///
+    /// # Examples
+    /// ```
+    /// use substrate_core_impl::Array;
+    /// use substrate_core_spec::array::ops::{InitOps, ConvertOps, ShapeOps};
+    /// use substrate_core_spec::array::ArrayLike;
+    /// use substrate_core_spec::array::memory_order::MemoryOrder;
+    ///
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    ///     .reshape(&[2, 3])
+    ///     .unwrap();
+    /// let a_row = a.view().to_row_major_copy().unwrap();
+    /// assert_eq!(a_row.shape(), &[2, 3]);
+    /// assert_eq!(a_row.order(), MemoryOrder::RowMajor);
+    /// assert_eq!(a_row.to_vec(), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+    /// ```
+    fn to_row_major_copy(&self) -> Result<Array<f64, Vec<f64>>, ArrayError> {
+        if self.is_canonical(MemoryOrder::RowMajor) {
+            // Fast path: already row‑major contiguous. Copy directly via iterator.
+            let data = self.iter().copied().collect();
+            return Array::from_vec_with_shape(data, self.shape());
+        }
+
+        let mut row_major_storage = vec![0.0; self.length()];
+        for (i, dst) in row_major_storage.iter_mut().enumerate() {
+            let row_indices = unravel_index(i, self.shape(), MemoryOrder::RowMajor)
+                .map_err(|_| ArrayError::IndexOutOfBounds)?;
+            let src_index = self
+                .physical_from_indices(&row_indices)
+                .map_err(|_| ArrayError::IndexOutOfBounds)?;
+            *dst = self.data[src_index];
+        }
+
+        Ok(Array {
+            storage: row_major_storage,
+            shape: self.shape().to_vec(),
+            strides: compute_strides(self.shape(), MemoryOrder::RowMajor),
+            offset: 0,
+            order: MemoryOrder::RowMajor,
+        })
+    }
+
     /// Converts the array view into a contiguous column‑major owned array.
     ///
     /// If the view is already in canonical column‑major order (contiguous with column‑major strides),
@@ -228,6 +278,56 @@ impl<'a> ShapeOps for ArrayView<'a, f64> {
         Ok(Array {
             storage: column_major_storage,
             shape: self.shape.to_vec(),
+            strides: compute_strides(self.shape(), MemoryOrder::ColumnMajor),
+            offset: 0,
+            order: MemoryOrder::ColumnMajor,
+        })
+    }
+
+    /// Copies the view into a contiguous column‑major owned array.
+    ///
+    /// This does not consume the view and is safe to call from a shared reference.
+    /// If the view is already in canonical column‑major order (contiguous, correct strides),
+    /// this method copies the data directly via the iterator (still copies, but avoids the
+    /// expensive per‑index mapping). Otherwise, it uses the general indexing loop.
+    ///
+    /// # Returns
+    /// A new `Array<f64, Vec<f64>>` in column‑major (Fortran) order, always contiguous.
+    ///
+    /// # Examples
+    /// ```
+    /// use substrate_core_impl::Array;
+    /// use substrate_core_spec::array::ops::{InitOps, ConvertOps, ShapeOps};
+    /// use substrate_core_spec::array::ArrayLike;
+    /// use substrate_core_spec::array::memory_order::MemoryOrder;
+    ///
+    /// let a = Array::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    ///     .reshape(&[2, 3])
+    ///     .unwrap();
+    /// let a_col = a.view().to_column_major_copy().unwrap();
+    /// assert_eq!(a_col.shape(), &[2, 3]);
+    /// assert_eq!(a_col.order(), MemoryOrder::ColumnMajor);
+    /// // Column‑major order: column by column -> [1,4,2,5,3,6]
+    /// assert_eq!(a_col.to_vec(), vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
+    /// ```
+    fn to_column_major_copy(&self) -> Result<Array<f64, Vec<f64>>, ArrayError> {
+        if self.is_canonical(MemoryOrder::ColumnMajor) {
+            // Fast path: already column‑major contiguous. Use iterator copy.
+            let data = self.iter().copied().collect();
+            return Array::from_vec_with_shape(data, self.shape());
+        }
+        let mut col_major_storage = vec![0.0; self.length()];
+        for (i, dst) in col_major_storage.iter_mut().enumerate() {
+            let col_indices = unravel_index(i, self.shape(), MemoryOrder::ColumnMajor)
+                .map_err(|_| ArrayError::IndexOutOfBounds)?;
+            let src_index = self
+                .physical_from_indices(&col_indices)
+                .map_err(|_| ArrayError::IndexOutOfBounds)?;
+            *dst = self.data[src_index];
+        }
+        Ok(Array {
+            storage: col_major_storage,
+            shape: self.shape().to_vec(),
             strides: compute_strides(self.shape(), MemoryOrder::ColumnMajor),
             offset: 0,
             order: MemoryOrder::ColumnMajor,
@@ -844,11 +944,25 @@ impl ShapeOps for Array<f64, Vec<f64>> {
         self.view().to_row_major()
     }
 
+    /// Copies the view into a contiguous row‑major owned array.
+    ///
+    /// See [`ArrayView::to_row_major_copy`] for details.
+    fn to_row_major_copy(&self) -> Result<Self::Output, Self::Error> {
+        self.view().to_row_major_copy()
+    }
+
     /// Converts the array view into a contiguous row‑major owned array.
     ///
     /// See [`ArrayView::to_column_major`] for details.
     fn to_column_major(self) -> Result<Self::Output, Self::Error> {
         self.view().to_column_major()
+    }
+
+    /// Copies the view into a contiguous column‑major owned array.
+    ///
+    /// See [`ArrayView::to_column_major`] for details.
+    fn to_column_major_copy(&self) -> Result<Self::Output, Self::Error> {
+        self.view().to_column_major_copy()
     }
 
     /// Flattens the array into a 1‑dimensional array (row‑major order).

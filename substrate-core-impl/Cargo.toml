@@ -12,7 +12,8 @@ uuid = { version = "1", features = ["v4", "serde"] }
 petgraph = { version = "0.8" }
 wide = { version = "1.1", optional = true }
 rayon = { version = "1.11", optional = true }
-wgpu = { version = "28.0", optional = true }
+kaio = { version = "0.4", optional = true }
+kaio-ops = { version = "0.4", optional = true }
 pollster = { version = "0.4", optional = true }
 serde = { version = "1", features = ["derive"] }
 bincode = { version = "2", features = ["serde"] }
@@ -34,7 +35,7 @@ default = ["std"]
 std = []
 simd = ["dep:wide"]
 parallel = ["dep:rayon"]
-gpu = ["dep:wgpu", "dep:pollster"]
+gpu = ["dep:kaio", "dep:kaio-ops", "dep:pollster"]
 fast = ["simd", "parallel"]
 mqtt = ["dep:rumqttc"]
 dds = ["dep:dust_dds"]
