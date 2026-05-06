@@ -31,7 +31,11 @@ impl<'a> ArrayView<'a, f64> {
         let result = (0..m)
             .into_par_iter()
             .flat_map(|i| {
-                let row = a_row.slice_by_range(0, i..i + 1).unwrap().squeeze().unwrap();
+                let row = a_row
+                    .slice_by_range(0, i..i + 1)
+                    .unwrap()
+                    .squeeze()
+                    .unwrap();
                 (0..n)
                     .map(|j| {
                         let col = b_row

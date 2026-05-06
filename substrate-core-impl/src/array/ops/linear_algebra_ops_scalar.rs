@@ -5,7 +5,11 @@ use crate::{
     Array,
     array::{ArrayView, error::ArrayError, utils::compute_strides},
 };
-use substrate_core_spec::array::{ArrayLike, memory_order::MemoryOrder, ops::{AccessOps, ShapeOps}};
+use substrate_core_spec::array::{
+    ArrayLike,
+    memory_order::MemoryOrder,
+    ops::{AccessOps, ShapeOps},
+};
 
 impl<'a> ArrayView<'a, f64> {
     pub fn dot_scalar(

@@ -6,7 +6,11 @@ use kaio::runtime::KaioDevice;
 #[cfg(feature = "gpu")]
 use kaio_ops::matmul;
 #[cfg(feature = "gpu")]
-use substrate_core_spec::array::{ArrayLike, memory_order::MemoryOrder, ops::{AccessOps, ShapeOps}};
+use substrate_core_spec::array::{
+    ArrayLike,
+    memory_order::MemoryOrder,
+    ops::{AccessOps, ShapeOps},
+};
 
 #[cfg(feature = "gpu")]
 use crate::{
@@ -36,7 +40,12 @@ impl<'a> ArrayView<'a, f64> {
 
         matmul(&device, &a, &b, &mut c, m as u32, n as u32, k as u32).unwrap();
 
-        let result = c.to_host(&device).unwrap().iter().map(|&x| x as f64).collect();
+        let result = c
+            .to_host(&device)
+            .unwrap()
+            .iter()
+            .map(|&x| x as f64)
+            .collect();
         Ok(Array {
             storage: result,
             shape: out_shape,

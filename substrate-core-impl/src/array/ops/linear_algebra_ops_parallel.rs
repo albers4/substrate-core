@@ -8,7 +8,11 @@ use {
         array::{ArrayView, error::ArrayError, utils::compute_strides},
     },
     rayon::prelude::*,
-    substrate_core_spec::array::{ArrayLike, memory_order::MemoryOrder, ops::{AccessOps, ShapeOps}},
+    substrate_core_spec::array::{
+        ArrayLike,
+        memory_order::MemoryOrder,
+        ops::{AccessOps, ShapeOps},
+    },
 };
 
 #[cfg(feature = "parallel")]
