@@ -4,6 +4,7 @@ mod binary_ops;
 mod convert_ops;
 mod init_ops;
 mod linear_algebra_ops;
+mod linear_algebra_ops_gpu;
 mod linear_algebra_ops_parallel;
 mod linear_algebra_ops_parallel_simd;
 mod linear_algebra_ops_scalar;

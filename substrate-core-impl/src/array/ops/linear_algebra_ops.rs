@@ -103,7 +103,7 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
 
         cfg_if! {
             if #[cfg(feature = "gpu")] {
-                todo!()
+                return self.matmul_gpu(other);
             } else if #[cfg(all(feature = "parallel", feature = "simd"))] {
                 return self.matmul_parallel_simd(other);
             } else if #[cfg(feature = "simd")] {
