@@ -111,7 +111,7 @@ impl<'a> LinearAlgebraOps for ArrayView<'a, f64> {
             } else if #[cfg(feature = "parallel")] {
                 return self.matmul_parallel(other);
             } else {
-                return self.matmul_scalar(other);
+                self.matmul_scalar(other)
             }
         }
     }
