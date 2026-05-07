@@ -7,3 +7,4 @@ use alloc::vec::Vec;
 use core::ops::{Add, Div, Mul, Neg, Rem, Sub};
 
 pub mod array;
+pub mod semantics;

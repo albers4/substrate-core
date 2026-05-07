@@ -1,12 +1,12 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
-extern crate alloc;
-
 mod array;
+mod semantics;
 
 pub use array::Array;
 pub use array::ArrayError;
 pub use array::CppArray;
+
+pub use semantics::constants::*;
+pub use semantics::derived_dimensions::*;
