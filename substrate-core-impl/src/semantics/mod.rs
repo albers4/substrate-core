@@ -3,3 +3,4 @@
 
 pub mod constants;
 pub mod derived_dimensions;
+pub mod error;

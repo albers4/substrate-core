@@ -3,7 +3,6 @@
 
 pub mod arithmetic;
 pub mod dimension;
-pub mod error;
 pub mod literal;
 pub mod ops;
 pub mod quantity;
