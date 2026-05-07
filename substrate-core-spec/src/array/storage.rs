@@ -1,7 +1,8 @@
 // Copyright (c) 2026 ARC (Applied Research & Computation)
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-use crate::{Vec, array::number::Number};
+use crate::array::number::Number;
+use std::vec::Vec;
 
 pub trait Storage {
     type Item: Number;

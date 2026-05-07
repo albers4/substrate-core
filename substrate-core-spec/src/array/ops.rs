@@ -3,10 +3,10 @@
 
 use core::ops::Range;
 
-use crate::Vec;
 use crate::array::ArrayViewLike;
 use crate::array::pad_mode::PadMode;
 use crate::array::{ArrayLike, index::ToIndex};
+use std::vec::Vec;
 
 pub trait InitOps: ArrayLike + Sized {
     type Output: ArrayLike;
