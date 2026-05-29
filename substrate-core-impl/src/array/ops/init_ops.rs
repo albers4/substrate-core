@@ -311,13 +311,7 @@ impl InitOps for Array<f64, Vec<f64>> {
     /// assert_eq!(a.to_vec(), vec![1.0, 2.0, 3.0]);
     /// ```
     fn from_vec(vec: Vec<Self::Item>) -> Self::Output {
-        Self {
-            shape: vec![vec.len()],
-            storage: vec,
-            strides: vec![1],
-            offset: 0,
-            order: Default::default(),
-        }
+        Self::from_vec(vec)
     }
 
     /// Creates a 1‑dimensional array with `n` linearly spaced elements between `a` and `b`.

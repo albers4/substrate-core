@@ -7,6 +7,7 @@ use substrate_core_spec::array::{
 
 use crate::array::{error::ArrayError, utils::compute_strides};
 
+#[derive(PartialEq, Eq, std::fmt::Debug)]
 pub struct Array<T: Number, S: Storage<Item = T>> {
     pub(crate) storage: S,
     pub(crate) shape: Vec<usize>,
@@ -23,6 +24,16 @@ impl Array<f64, Vec<f64>> {
             storage: vec![scalar],
             shape: vec![],
             strides: vec![],
+            offset: 0,
+            order: Default::default(),
+        }
+    }
+
+    pub fn from_vec(vec: Vec<f64>) -> Self {
+        Self {
+            shape: vec![vec.len()],
+            storage: vec,
+            strides: vec![1],
             offset: 0,
             order: Default::default(),
         }
